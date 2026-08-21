@@ -19,15 +19,16 @@ VERSION=$(echo "$RELEASE_NAME" | sed 's/^v//')
 GHCR_OWNER=$(echo "${GITHUB_REPOSITORY_OWNER:-isawan}" | tr '[:upper:]' '[:lower:]')
 IMAGE="ghcr.io/${GHCR_OWNER}/terrashine:${VERSION}"
 
-$DOCKER_BIN manifest create "$IMAGE"
-
 SQLX_OFFLINE=1 cross build --target x86_64-unknown-linux-musl --release --verbose
 tar -czf terrashine-x86_64-unknown-linux-musl.tar.gz  -C target/x86_64-unknown-linux-musl/release/  terrashine
-$DOCKER_BIN build --manifest "$IMAGE" --platform=linux/amd64 --build-arg HOST_BIN_PATH=target/x86_64-unknown-linux-musl/release/terrashine -f Dockerfile.release
+$DOCKER_BIN build --platform=linux/amd64 --build-arg HOST_BIN_PATH=target/x86_64-unknown-linux-musl/release/terrashine -f Dockerfile.release -t "${IMAGE}-amd64" .
 
 cross clean
 
 SQLX_OFFLINE=1 cross build --target aarch64-unknown-linux-musl --release --verbose
 tar -czf terrashine-aarch64-unknown-linux-musl.tar.gz -C target/aarch64-unknown-linux-musl/release/ terrashine
-$DOCKER_BIN build --manifest "$IMAGE" --platform=linux/arm64 --build-arg HOST_BIN_PATH=target/aarch64-unknown-linux-musl/release/terrashine -f Dockerfile.release
-$DOCKER_BIN manifest push --all "$IMAGE" "$IMAGE"
+$DOCKER_BIN build --platform=linux/arm64 --build-arg HOST_BIN_PATH=target/aarch64-unknown-linux-musl/release/terrashine -f Dockerfile.release -t "${IMAGE}-arm64" .
+$DOCKER_BIN push "${IMAGE}-amd64"
+$DOCKER_BIN push "${IMAGE}-arm64"
+$DOCKER_BIN manifest create "$IMAGE" "${IMAGE}-amd64" "${IMAGE}-arm64"
+$DOCKER_BIN manifest push "$IMAGE"
