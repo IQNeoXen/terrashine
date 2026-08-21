@@ -192,9 +192,7 @@ mod tests {
     #[tokio::test]
     async fn test_error_occur_on_insert() {
         let credentials = FaultyCredentials::new();
-        let state = APIState {
-            credentials: credentials,
-        };
+        let state = APIState { credentials };
         let request = axum::http::Request::builder()
             .method("POST")
             .uri("/api/v1/credentials/example.com")
@@ -215,9 +213,7 @@ mod tests {
     #[tokio::test]
     async fn test_error_occur_on_delete() {
         let credentials = FaultyCredentials::new();
-        let state = APIState {
-            credentials: credentials,
-        };
+        let state = APIState { credentials };
         let request = axum::http::Request::builder()
             .method("DELETE")
             .uri("/api/v1/credentials/example.com")
@@ -230,9 +226,7 @@ mod tests {
     #[tokio::test]
     async fn test_error_occur_on_get() {
         let credentials = FaultyCredentials::new();
-        let state = APIState {
-            credentials: credentials,
-        };
+        let state = APIState { credentials };
         let request = axum::http::Request::builder()
             .method("GET")
             .uri("/api/v1/credentials/example.com")

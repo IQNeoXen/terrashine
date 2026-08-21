@@ -17,7 +17,6 @@ use terrashine::{
     config::{IsHealthyArgs, ServerArgs},
 };
 use tokio::select;
-use tower_http::trace;
 use tracing_test::traced_test;
 use url::Url;
 use uuid::Uuid;
@@ -50,7 +49,7 @@ fn test_server_startup(_: PoolOptions<Postgres>, db_options: PgConnectOptions) {
     let socket = rx.await.unwrap().msg;
     select! {
         _ = handle => {
-            assert!(false, "Server shutdown before client");
+            panic!("Server shutdown before client");
         },
         status = reqwest::get(format!("http://localhost:{}/healthcheck", socket.port())) => {
             assert_eq!(status.unwrap().status(), StatusCode::OK);
@@ -58,7 +57,7 @@ fn test_server_startup(_: PoolOptions<Postgres>, db_options: PgConnectOptions) {
         },
         _ = tokio::time::sleep(Duration::from_secs(10)) => {
             cancellation_token.cancel();
-            assert!(false, "Test did not complete in time")
+            panic!("Test did not complete in time")
         }
     }
 }
@@ -120,10 +119,10 @@ fn test_end_to_end_terraform_flow(_: PoolOptions<Postgres>, db_options: PgConnec
                 let stdout = from_utf8(&result.stdout).expect("Could not parse stdout as utf-8");
                 let stderr = from_utf8(&result.stderr).expect("Could not parse stderr as utf-8");
                 let help_message = format!("Stdout from terraform: {}\nStderr from terraform: {}", stdout, stderr);
-                assert_eq!(result.status.success(), true, "{}", help_message);
+                assert!(result.status.success(), "{}", help_message);
             },
             _ = tokio::time::sleep(Duration::from_secs(60)) => {
-                assert!(false, "Test did not complete in time")
+                panic!("Test did not complete in time")
             }
         }
     }

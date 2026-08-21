@@ -127,9 +127,7 @@ pub async fn setup_server(
 
     // path style required for minio to work
     // Set up AWS SDK
-    let aws_config = aws_config::defaults(BehaviorVersion::v2025_01_17())
-        .load()
-        .await;
+    let aws_config = aws_config::defaults(BehaviorVersion::latest()).load().await;
     let mut s3_config = aws_sdk_s3::config::Builder::from(&aws_config).force_path_style(true);
     if let Some(endpoint) = &config.s3_endpoint {
         s3_config = s3_config.endpoint_url(endpoint.as_str());
